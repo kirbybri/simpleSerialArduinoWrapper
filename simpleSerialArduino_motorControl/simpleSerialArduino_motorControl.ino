@@ -1,3 +1,5 @@
+#include <AFMotor.h>
+
 const byte buffSize = 40;
 char inputBuffer[buffSize];
 const char startMarker = '<';
@@ -8,7 +10,12 @@ boolean newDataFromPC = false;
 
 char cvar0[buffSize] = {0};
 int ivar0 = 0;
-float fvar0 = 0.0; // fraction of servo range to move
+int ivar1 = 0;
+float fvar0 = 0.0;
+float fvar1 = 0.0;
+
+AF_DCMotor motor_1(1);
+AF_DCMotor motor_2(2);
 
 void setup() {
   Serial.begin(9600);
@@ -16,6 +23,12 @@ void setup() {
   
   //setup pins etc
   pinMode(LED_BUILTIN, OUTPUT);
+  
+  // turn on motor
+  motor_1.setSpeed(200);
+  motor_1.run(RELEASE);
+  motor_2.setSpeed(200);
+  motor_2.run(RELEASE);
 }
 
 void loop() {
@@ -56,7 +69,6 @@ void getDataFromPC() {
 }
 
 void parseData() {
-  // split the data into its parts, expected format CHARS,INT,FLOAT... (note markers < and > already stripped out)
   char * strtokIndx; // this is used by strtok() as an index
   
   strtokIndx = strtok(inputBuffer,","); // get the first part - the string
@@ -66,7 +78,8 @@ void parseData() {
   ivar0 = atoi(strtokIndx);     // convert this part to an integer
   
   strtokIndx = strtok(NULL, ","); 
-  fvar0 = atof(strtokIndx);     // convert this part to a float
+  //fvar0 = atof(strtokIndx);     // convert this part to a float
+  ivar1 = atoi(strtokIndx);     // convert this part to an integer
 }
 
 void replyToPC() {
@@ -77,7 +90,7 @@ void replyToPC() {
     Serial.print(",");
     Serial.print(ivar0);
     Serial.print(",");
-    Serial.print(fvar0);
+    Serial.print(ivar1);
     Serial.println(">");
   }
 }
@@ -97,4 +110,31 @@ void performAction() {
     }
   }
   
+  if (strcmp(cvar0, "FWD") == 0) {
+    //motor.setSpeed(200);
+    if( ivar1 == 1 ){
+      motor_1.run(FORWARD);
+      delay(ivar0);
+      motor_1.run(RELEASE);
+    }
+    if( ivar1 == 2 ){
+      motor_2.run(FORWARD);
+      delay(ivar0);
+      motor_2.run(RELEASE);
+    }    
+  }
+  
+  if (strcmp(cvar0, "BWD") == 0) {
+    //motor.setSpeed(200);
+    if( ivar1 == 1 ){
+      motor_1.run(BACKWARD);
+      delay(ivar0);
+      motor_1.run(RELEASE);
+    }
+    if( ivar1 == 2 ){
+      motor_2.run(BACKWARD);
+      delay(ivar0);
+      motor_2.run(RELEASE);
+    } 
+  }
 }

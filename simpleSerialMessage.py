@@ -151,4 +151,5 @@ if __name__ == '__main__':
   myser = simpleSerialMessage()
   #myser.flushSerialData()
   myser.sendMessage("<LED,210,0.2>")
-  myser.sendMessage("<TEST,210,0.2>")
+  #myser.sendMessage("<TEST,210,0.2>")
+  myser.sendMessage("<BWD,1000,2>")
