@@ -15,7 +15,7 @@ float fvar0 = 0.0;
 float fvar1 = 0.0;
 
 AF_DCMotor motor_1(1);
-AF_DCMotor motor_2(2);
+AF_DCMotor motor_2(4);
 
 void setup() {
   Serial.begin(9600);
