@@ -121,11 +121,25 @@ void performAction() {
       motor_2.run(FORWARD);
       delay(ivar0);
       motor_2.run(RELEASE);
-    }    
+    }
+    if( ivar1 == 0 ){
+      motor_1.run(FORWARD);
+      motor_2.run(FORWARD);
+      delay(ivar0);
+      motor_1.run(RELEASE);
+      motor_2.run(RELEASE);
+    }
   }
   
   if (strcmp(cvar0, "BWD") == 0) {
     //motor.setSpeed(200);
+    if( ivar1 == 0 ){
+      motor_1.run(BACKWARD);
+      motor_2.run(BACKWARD);
+      delay(ivar0);
+      motor_1.run(RELEASE);
+      motor_2.run(RELEASE);
+    }
     if( ivar1 == 1 ){
       motor_1.run(BACKWARD);
       delay(ivar0);
@@ -135,6 +149,23 @@ void performAction() {
       motor_2.run(BACKWARD);
       delay(ivar0);
       motor_2.run(RELEASE);
-    } 
+    }
+  }
+  
+  if (strcmp(cvar0, "SPIN") == 0) {
+    if( ivar1 == 0 ){
+      motor_1.run(FORWARD);
+      motor_2.run(BACKWARD);
+      delay(ivar0);
+      motor_1.run(RELEASE);
+      motor_2.run(RELEASE);
+    }
+    if( ivar1 == 1 ){
+      motor_1.run(BACKWARD);
+      motor_2.run(FORWARD);
+      delay(ivar0);
+      motor_1.run(RELEASE);
+      motor_2.run(RELEASE);
+    }
   }
 }
