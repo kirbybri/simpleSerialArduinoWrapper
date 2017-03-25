@@ -134,7 +134,7 @@ class simpleSerialMessage():
   def sendMessage(self, messageStr):
     if self.ser == None:
       return
-    print( "Sent from PC -- " + str(messageStr) )
+    #print( "Sent from PC -- " + str(messageStr) )
     #self.flushSerialData()
     self.sendToSerial(messageStr)
     time.sleep(1)
