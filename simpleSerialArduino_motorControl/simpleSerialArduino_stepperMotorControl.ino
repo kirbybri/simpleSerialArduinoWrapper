@@ -1,4 +1,5 @@
-#include "Arduino.h"
+#include <Arduino.h>
+#include <AFMotor.h>
 
 const byte buffSize = 40;
 char inputBuffer[buffSize];
@@ -10,7 +11,11 @@ boolean newDataFromPC = false;
 
 char cvar0[buffSize] = {0};
 int ivar0 = 0;
-float fvar0 = 0.0; // fraction of servo range to move
+int ivar1 = 0;
+float fvar0 = 0.0;
+float fvar1 = 0.0;
+
+AF_Stepper Stepper1(64, 1);
 
 void setup() {
   Serial.begin(9600);
@@ -18,33 +23,38 @@ void setup() {
   
   //setup pins etc
   pinMode(LED_BUILTIN, OUTPUT);
+  
+  // turn on motor
+  Stepper1.setSpeed(600);
+  Stepper1.release();
 }
 
 void parseData() {
-  // split the data into its parts, expected format CHARS,INT,FLOAT... (note markers < and > already stripped out)
   char * strtokIndx; // this is used by strtok() as an index
-
+ 
   strtokIndx = strtok(inputBuffer,","); // get the first part - the string
   strcpy(cvar0, strtokIndx); // copy it to char array
-
+ 
   strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
   ivar0 = atoi(strtokIndx);     // convert this part to an integer
 
   strtokIndx = strtok(NULL, ",");
-  fvar0 = atof(strtokIndx);     // convert this part to a float
+  //fvar0 = atof(strtokIndx);     // convert this part to a float
+  ivar1 = atoi(strtokIndx);     // convert this part to an integer
 }
 
 void getDataFromPC() {
-  
   if(Serial.available() > 0) {
     char x = Serial.read();
 
     // the order of these IF clauses is significant  
     if (x == endMarker) {
+      if(readInProgress == true ){
+        newDataFromPC = true;
+        inputBuffer[bytesRecvd] = 0;
+        parseData();
+      }
       readInProgress = false;
-      newDataFromPC = true;
-      inputBuffer[bytesRecvd] = 0;
-      parseData();
     }
     
     if(readInProgress) {
@@ -60,20 +70,22 @@ void getDataFromPC() {
       readInProgress = true;
     }
   }
-  
+
 }
 
 void replyToPC() {
-  if (newDataFromPC) {
-    newDataFromPC = false;
-    Serial.print("<");
-    Serial.print(cvar0);
-    Serial.print(",");
-    Serial.print(ivar0);
-    Serial.print(",");
-    Serial.print(fvar0);
-    Serial.println(">");
-  }
+
+  if (!newDataFromPC)
+    return;
+ 
+  newDataFromPC = false;
+  Serial.print("<");
+  Serial.print(cvar0);
+  Serial.print(",");
+  Serial.print(ivar0);
+  Serial.print(",");
+  Serial.print(ivar1);
+  Serial.println(">");
 }
 
 void performAction() {
@@ -90,13 +102,29 @@ void performAction() {
       delay(50);                       // wait for a second
     }
   }
+
+  if (strcmp(cvar0, "FWD") == 0) {
+    if( ivar0 == 1 ){
+      Stepper1.step(ivar1, FORWARD, SINGLE);
+      Stepper1.release();
+    }
+  }
   
+  if (strcmp(cvar0, "BWD") == 0) {
+    if( ivar0 == 1 ){
+      Stepper1.step(ivar1, BACKWARD, SINGLE);
+      Stepper1.release();
+    }
+  }
+
 }
 
 void loop() {
   getDataFromPC();
-  performAction();
-  replyToPC();
+  if( newDataFromPC ){
+    performAction();
+    replyToPC();
+    delay(10);
+  }
   newDataFromPC = false; //explicitly make sure PC message is not processed twice
-  delay(10);
 }
